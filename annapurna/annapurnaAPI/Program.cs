@@ -7,8 +7,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using annapurnaAPI.Models;
-using Context;
+using annapurnaAPI.Context;
+using System.Diagnostics;
 
 namespace annapurnaAPI
 {
@@ -16,21 +16,18 @@ namespace annapurnaAPI
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
-            var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-            var configuration = builder.Build();
-
-            string connectionString = configuration.GetConnectionString("SampleConnection");
-
             // Create an user instance and save the entity to the database
-            var entry = new User() { fname = "John", lname = "Winston" };
-
-            using (var context = AnnapurnaContextFactory.Create(connectionString))
+            using (var context = new UserContext())
             {
-                context.Add(entry);
+                // Create database
+                context.Database.EnsureCreated();
+                // Init sample data
+                var user = new User { fname = "Ankan", lname = "Giri" };
+                context.Add(user);
                 context.SaveChanges();
             }
+
+            BuildWebHost(args).Run();          
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
